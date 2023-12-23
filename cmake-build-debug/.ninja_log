@@ -1,0 +1,12 @@
+# ninja log v5
+1	388	1701389616133901109	CMakeFiles/MinitelViewer.dir/MinitelFont.cpp.o	c1d28c3c875dc933
+0	10	1701892725185642923	build.ninja	3c0e291f046360c
+331	403	1701814401242658768	MinitelViewer	c7b3d0466f061821
+1	416	1701814316482653347	CMakeFiles/MinitelViewer.dir/main.cpp.o	d5e26cc75a408189
+0	331	1701814401172658764	CMakeFiles/MinitelViewer.dir/MinitelScreenCell.cpp.o	d83a6565b4db1010
+1	428	1701814316492653347	CMakeFiles/MinitelViewer.dir/MinitelScreen.cpp.o	427e0217572e13cc
+1	363	1701892738405639353	CMakeFiles/MinitelViewer.dir/MinitelScreenCell.cpp.o	d83a6565b4db1010
+1	364	1701892738415639358	CMakeFiles/MinitelViewer.dir/main.cpp.o	d5e26cc75a408189
+1	412	1701892738455639384	CMakeFiles/MinitelViewer.dir/MinitelScreen.cpp.o	427e0217572e13cc
+1	421	1701892738465639388	CMakeFiles/MinitelViewer.dir/MinitelFont.cpp.o	c1d28c3c875dc933
+421	501	1701892738545639432	MinitelViewer	c7b3d0466f061821

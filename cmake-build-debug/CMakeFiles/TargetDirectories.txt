@@ -1,0 +1,3 @@
+/home/asphox/CLionProjects/MinitelViewer/cmake-build-debug/CMakeFiles/MinitelViewer.dir
+/home/asphox/CLionProjects/MinitelViewer/cmake-build-debug/CMakeFiles/edit_cache.dir
+/home/asphox/CLionProjects/MinitelViewer/cmake-build-debug/CMakeFiles/rebuild_cache.dir
