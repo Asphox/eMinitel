@@ -4,11 +4,12 @@ project(MinitelViewer)
 set(CMAKE_CXX_STANDARD 17)
 
 add_executable(MinitelViewer main.cpp
-        MinitelScreen.cpp
-        MinitelScreen.h
-        MinitelScreenCell.cpp
-        MinitelScreenCell.h
-        MinitelFont.cpp
-        MinitelFont.h
-        MinitelCharacters.h)
+        Screen/Screen.cpp
+        Screen/Screen.h
+        Screen/ScreenCell.cpp
+        Screen/ScreenCell.h
+        Screen/Font.cpp
+        Screen/Font.h
+        Screen/MosaicGlyph.cpp
+        Screen/MosaicGlyph.h)
 target_link_libraries(MinitelViewer sfml-graphics sfml-window sfml-system)
