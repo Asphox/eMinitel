@@ -22,6 +22,7 @@ void ScreenCell::set_glyph(GLYPH_CODE gc)
     GLYPH_ATT_BCOLOR bc = get_glyph_att_bcolor(gc);
     sf::Color sf_bc;
     bool underline = get_glyph_att_underline(gc);
+    GLYPH_CHARSET cs = get_glyph_charset(gc);
     bool color = true; // TODO color vs grey
     switch(fc)
     {
@@ -47,7 +48,8 @@ void ScreenCell::set_glyph(GLYPH_CODE gc)
     }
 
     // switches foreground and background color if negative
-    if(get_glyph_att_negative(gc))
+    // not available for mosaic
+    if(cs != G1 && get_glyph_att_negative(gc))
         std::swap(sf_bc, sf_fc);
 
     m_text_glyph.setFillColor(sf_fc);
@@ -56,7 +58,7 @@ void ScreenCell::set_glyph(GLYPH_CODE gc)
     m_background.setFillColor(sf_bc);
 
     // if glyph's charset is not mosaic
-    if(get_glyph_charset(gc) != G1)
+    if(cs != G1)
     {
         std::uint32_t font_code = get_glyph_font_code(gc);
         m_text_glyph.setString(font_code);
@@ -64,7 +66,7 @@ void ScreenCell::set_glyph(GLYPH_CODE gc)
         {
             case GS_NORMAL:         m_text_glyph.setScale({0.80, 0.80});
                                     m_text_glyph.setOrigin({0, 0});
-                                    m_background.setScale({1, 1});
+                                    m_background.setSize(m_size);
                                     m_background.setOrigin({0, 0});
                                     m_underline.setPosition(0, m_size.y*0.9);
                                     m_underline.setScale({1, 1});

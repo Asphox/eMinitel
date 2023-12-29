@@ -1,13 +1,12 @@
 #include <SFML/Graphics.hpp>
-#include "Screen/Screen.h"
+#include "Core/Minitel.h"
 
 int main()
 {
     sf::RenderWindow window(sf::VideoMode(1500, 1300), "MinitelViewer");
     window.setFramerateLimit(30);
-    Screen minitel_screen(1100);
-    minitel_screen.update();
-    minitel_screen.setPosition(50,50);
+    Minitel minitel(1100);
+    minitel.setPosition(50,50);
     while (window.isOpen())
     {
         sf::Event event;
@@ -15,10 +14,17 @@ int main()
         {
             if (event.type == sf::Event::Closed)
                 window.close();
+            if(event.type == sf::Event::KeyReleased)
+            {
+                if(event.key.code == sf::Keyboard::Space)
+                    minitel.reset();
+            }
         }
-        minitel_screen.update_blink();
+
+        minitel.update();
+
         window.clear();
-        window.draw(minitel_screen);
+        window.draw(minitel);
         window.display();
     }
 
