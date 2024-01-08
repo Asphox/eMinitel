@@ -1,12 +1,20 @@
 #include <SFML/Graphics.hpp>
-#include "Core/Minitel.h"
+#include "minitel_core/Minitel.h"
+#include "Screen/Screen.h"
+#include "Com/TCPCom.h"
+#include <iostream>
+
+using namespace mtlc;
 
 int main()
 {
     sf::RenderWindow window(sf::VideoMode(1500, 1300), "MinitelViewer");
     window.setFramerateLimit(30);
-    Minitel minitel(1100);
-    minitel.setPosition(50,50);
+    Screen screen(1100);
+    screen.setPosition(50,50);
+    TCPCom com;
+    Minitel minitel(&screen, &com);
+    std::cout << sizeof(Minitel) << std::endl;
     while (window.isOpen())
     {
         sf::Event event;
@@ -17,14 +25,16 @@ int main()
             if(event.type == sf::Event::KeyReleased)
             {
                 if(event.key.code == sf::Keyboard::Space)
-                    minitel.reset();
+                    screen.set_color_mode(false);
             }
+            else
+                screen.set_color_mode(true);
         }
 
         minitel.update();
 
         window.clear();
-        window.draw(minitel);
+        window.draw(screen);
         window.display();
     }
 

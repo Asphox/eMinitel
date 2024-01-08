@@ -6,7 +6,7 @@
 #define SCREENCELL_H
 
 #include <SFML/Graphics.hpp>
-#include "Glyph.h"
+#include "../minitel_core/Glyph.h"
 #include "MosaicGlyph.h"
 
 class Screen;
@@ -32,10 +32,16 @@ private:
     GLYPH_CODE          m_glyph = GC_SPACE;
 
     void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
+
+    // converts a glyph to font's codepoint
+    static std::uint32_t __get_glyph_codepoint(GLYPH_CODE gc);
+
 public:
     ScreenCell(const Screen&);
+    ScreenCell(const ScreenCell&) = default;
+    ScreenCell& operator=(const ScreenCell& src);
     void setSize(const sf::Vector2f& size);
     void set_glyph(GLYPH_CODE gc);
-    inline GLYPH_CODE get_glypĥ() const { return m_glyph; }
+    inline GLYPH_CODE get_glyph() const { return m_glyph; }
 };
 #endif //SCREENCELL_H

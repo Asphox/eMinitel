@@ -6,9 +6,10 @@
 #define SCREEN_H
 
 #include <SFML/Graphics.hpp>
+#include "../minitel_core_interfaces/ScreenInterface.h"
 #include "ScreenCell.h"
 
-class Screen : public sf::Drawable, public sf::Transformable
+class Screen : public sf::Drawable, public sf::Transformable, public mtlc::IScreen
 {
 private:
     // true screen ratio for Minitel screen
@@ -18,21 +19,31 @@ private:
     std::vector<ScreenCell>             m_cells;
     bool                                m_blink_state = false;
     bool                                m_cursor_visible = false;
+    bool                                m_color_mode = true;
+    bool                                m_masked = false;
     sf::Clock                           m_clock_blink;
     sf::Vector2u                        m_cursor_pos;
     sf::RectangleShape                  m_cursor;
     void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
+    // applies zones attributes
+    void __apply_zones_attributes();
 public:
     Screen(float height);
-    void update();
-    // updates the blink status (need to be called for each iteration of the main loop)
-    void update_blink();
     inline bool get_blink_state() const { return m_blink_state; }
-
-    void clear(bool keep_line_0 = false);
-    void set_glyph_at(GLYPH_CODE gc, int col, int line);
-    bool set_cursor_pos(unsigned int col, unsigned int line);
-    void set_cursor_visible(bool visible);
+    inline void set_color_mode(bool c){ m_color_mode = c; }
+    inline bool get_color_mode() const { return m_color_mode; }
+    inline bool get_masked() const {return m_masked; }
+    // =====================================================
+    // IScreen implementations
+    // =====================================================
+    void set_height(float height) override;
+    void update() override;
+    void clear(bool keep_line_0 = false) override;
+    void set_glyph_at(GLYPH_CODE gc, std::uint8_t col, std::uint8_t line) override;
+    void set_cursor_pos(std::uint8_t col, std::uint8_t line) override;
+    void set_cursor_visible(bool visible) override;
+    void set_mask(bool mask) override;
+    void scroll(std::int8_t nb_of_line) = 0;
 };
 
 

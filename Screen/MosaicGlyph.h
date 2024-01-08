@@ -6,6 +6,7 @@
 #define MINITELVIEWER_MOSAICGLYPH_H
 
 #include <SFML/Graphics.hpp>
+#include <array>
 
 class MosaicGlyph : public sf::Drawable, public sf::Transformable
 {

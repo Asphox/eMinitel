@@ -85,24 +85,20 @@ constexpr GLYPH_CODE operator|(GLYPH_CODE gc, std::uint16_t v)
 // charset      : charset of the glyph (G0/G1/G2/SPEC)
 // vdtx_code    : corresponding Videotext code for this glyph
 // font_code    : the codepoint of the glyph in the eMinitel font. If defaulted, same as vdtx_code.
-constexpr GLYPH_CODE make_glyph(GLYPH_CHARSET charset, char vdtx_code, std::uint16_t font_code = UINT16_MAX)
+constexpr GLYPH_CODE make_glyph(GLYPH_CHARSET charset, char vdtx_code)
 {
     GLYPH_CODE glyph_code = static_cast<GLYPH_CODE>(((uint16_t)(charset) << 10) | (vdtx_code));
-    if(font_code == UINT16_MAX)
-        font_code = vdtx_code;
-    glyph_code = glyph_code | (static_cast<std::uint32_t>(font_code & 0xFF)<<12);
     return glyph_code;
 }
 
 // Makes an accentuated variation of a glyph
 // gc   : base glyph
-// font_code    : the codepoint of the glyph in the eMinitel font
 // a            : type of accentuation
-constexpr GLYPH_CODE make_glyph_accent(GLYPH_CODE gc, std::uint16_t font_code, GLYPH_ACCENT a)
+constexpr GLYPH_CODE make_glyph_accent(GLYPH_CODE gc, GLYPH_ACCENT a)
 {
     // clear charset bits
     char c = (char)(gc & 0x7F);
-    GLYPH_CODE glyph_code_accent = make_glyph(SPEC, c, font_code);
+    GLYPH_CODE glyph_code_accent = make_glyph(SPEC, c);
     glyph_code_accent = glyph_code_accent | static_cast<std::uint32_t>(a<<7);
     return glyph_code_accent;
 }
@@ -112,13 +108,6 @@ constexpr GLYPH_CODE make_glyph_accent(GLYPH_CODE gc, std::uint16_t font_code, G
 constexpr char get_glyph_vdtx_code(GLYPH_CODE gc)
 {
     return (gc & 0x7F);
-}
-
-// Returns the font code of a glyph
-// gc           : glyph code
-constexpr std::uint32_t get_glyph_font_code(GLYPH_CODE gc)
-{
-    return (gc>>12) & 0xFF;
 }
 
 // Returns the binary index for a mosaic glyph (from 0b000000 to 0b111111)
@@ -254,6 +243,36 @@ constexpr bool get_glyph_att_blink(GLYPH_CODE gc)
     return gc & (1<<30);
 }
 
+// Returns true if the glyph is a zone delimiter
+constexpr bool is_glyph_zone_delimiter(GLYPH_CODE gc)
+{
+    GLYPH_CHARSET cs = get_glyph_charset(gc);
+    if(cs == G1 || get_glyph_vdtx_code(gc) == ' ')
+        return gc & (1<<19);
+    return false;
+}
+
+// Marks/Unmarks the glyph as zone delimiter
+constexpr GLYPH_CODE set_glyph_zone_delimiter(GLYPH_CODE gc, bool delimiter)
+{
+    GLYPH_CHARSET cs = get_glyph_charset(gc);
+    if(cs != G1 && get_glyph_vdtx_code(gc) != ' ')
+        return gc;
+    return static_cast<GLYPH_CODE>((gc & ~(1<<19)) | (delimiter<<19));
+}
+
+// sets mask attribute
+constexpr GLYPH_CODE set_glyph_att_mask(GLYPH_CODE gc, bool mask)
+{
+    return static_cast<GLYPH_CODE>((gc & ~(1<<31)) | (mask<<31));
+}
+
+// returns true if the glyph is maskable
+constexpr bool get_glyph_att_mask(GLYPH_CODE gc)
+{
+    return gc & (1<<31);
+}
+
 // =========================================================================================
 //          Glyph description
 //==========================================================================================
@@ -261,7 +280,7 @@ constexpr bool get_glyph_att_blink(GLYPH_CODE gc)
 // based on the following repartition :
 //
 // bits       24           16           8            0
-//     0BNL SSFF    FBBB UUUU   UUUU GGAA    AVVV VVVV
+//     MBNL SSFF    FBBB DXXX   XXXX GGAA    AVVV VVVV
 //
 // V [0-6] :    videotext code minus 0x20 (G0/G1 value or G2 only value for mono-glyph)
 // A [7-9] :    type of accentuation on a glyph, only if G is 11, nothing otherwise
@@ -275,10 +294,12 @@ constexpr bool get_glyph_att_blink(GLYPH_CODE gc)
 //              - 111 : Reserved
 // G [10-11] :   charset of the glyph
 //              - 00 : G0
-//              - 01 : G1
+//              - 01 : G1    (can be a zone delimiter)
 //              - 10 : G2 only for mono-glyph
-//              - 11 : Special charset for accentuated glyphs and special chars (space)
-// U [12-19] :  corresponding code-in-font value (on 8 bits)
+//              - 11 : SPECial charset for accentuated glyphs and special chars (space)  (can be a zone delimiter)
+//
+// X [12-18] :  reserved for future use (7 bits)
+// D [19]    :  glyph is a zone delimiter (only if G=01 or G=11)
 //  ===== ATTRIBUTS ====
 // B [20-22] :  background color
 //              - 000 black
@@ -312,6 +333,7 @@ constexpr bool get_glyph_att_blink(GLYPH_CODE gc)
 // B [30] :     blink
 //              - 0 OFF
 //              - 1 ON
+// M [31] :     masked (not implemented yet)
 enum GLYPH_CODE : uint32_t
 {
     GC_EXCL                 = make_glyph(G0, '!'),
@@ -347,14 +369,14 @@ enum GLYPH_CODE : uint32_t
     GC_QUEST                = make_glyph(G0, '?'),
     GC_AT                   = make_glyph(G0, '@'),
     GC_A                    = make_glyph(G0, 'A'),
-    GC_A_CIRC               = make_glyph_accent(static_cast<GLYPH_CODE>(GC_A), 'A', GCA_CIRC),        // only on VGP2
+    GC_A_CIRC               = make_glyph_accent(static_cast<GLYPH_CODE>(GC_A), GCA_CIRC),        // only on VGP2
     GC_B                    = make_glyph(G0, 'B'),
     GC_C                    = make_glyph(G0, 'C'),
-    GC_C_CEDILLA            = make_glyph_accent(static_cast<GLYPH_CODE>(GC_C), 'C', GCA_CEDILLA),     // only on VGP2
+    GC_C_CEDILLA            = make_glyph_accent(static_cast<GLYPH_CODE>(GC_C), GCA_CEDILLA),     // only on VGP2
     GC_D                    = make_glyph(G0, 'D'),
     GC_E                    = make_glyph(G0, 'E'),
-    GC_E_GRAVE              = make_glyph_accent(static_cast<GLYPH_CODE>(GC_E), 'E', GCA_GRAVE),       // only on VGP2
-    GC_E_ACUTE              = make_glyph_accent(static_cast<GLYPH_CODE>(GC_E), 'E', GCA_ACUTE),       // only on VGP2
+    GC_E_GRAVE              = make_glyph_accent(static_cast<GLYPH_CODE>(GC_E), GCA_GRAVE),       // only on VGP2
+    GC_E_ACUTE              = make_glyph_accent(static_cast<GLYPH_CODE>(GC_E), GCA_ACUTE),       // only on VGP2
     GC_F                    = make_glyph(G0, 'F'),
     GC_G                    = make_glyph(G0, 'G'),
     GC_H                    = make_glyph(G0, 'H'),
@@ -379,72 +401,72 @@ enum GLYPH_CODE : uint32_t
     GC_LSQB                 = make_glyph(G0, '['),
     GC_BSLASH               = make_glyph(G0, '\\'),
     GC_RSQB                 = make_glyph(G0, L']'),
-    GC_UPARROW              = make_glyph(G0, 0x5E, 0x5E),
+    GC_UPARROW              = make_glyph(G0, 0x5E),
     GC_UNDRSCR              = make_glyph(G0, '_'),
-    GC_MIDLSCR              = make_glyph(G0, 0x60, 0x85),
+    GC_MIDLSCR              = make_glyph(G0, 0x60),
     GC_a                    = make_glyph(G0, 'a'),
-    GC_a_CIRC               = make_glyph_accent(static_cast<GLYPH_CODE>(GC_a), 0xE2, GCA_CIRC),
-    GC_a_GRAVE              = make_glyph_accent(static_cast<GLYPH_CODE>(GC_a), 0xE0, GCA_GRAVE),
-    GC_a_DIAERESIS          = make_glyph_accent(static_cast<GLYPH_CODE>(GC_a), 0xE4, GCA_DIAERESIS),   // only on VGP5
+    GC_a_CIRC               = make_glyph_accent(static_cast<GLYPH_CODE>(GC_a), GCA_CIRC),
+    GC_a_GRAVE              = make_glyph_accent(static_cast<GLYPH_CODE>(GC_a), GCA_GRAVE),
+    GC_a_DIAERESIS          = make_glyph_accent(static_cast<GLYPH_CODE>(GC_a), GCA_DIAERESIS),   // only on VGP5
     GC_b                    = make_glyph(G0, 'b'),
     GC_c                    = make_glyph(G0, 'c'),
-    GC_c_CEDILLA            = make_glyph_accent(static_cast<GLYPH_CODE>(GC_c), 0xE7, GCA_CEDILLA),
+    GC_c_CEDILLA            = make_glyph_accent(static_cast<GLYPH_CODE>(GC_c), GCA_CEDILLA),
     GC_d                    = make_glyph(G0, 'd'),
     GC_e                    = make_glyph(G0, 'e'),
-    GC_e_CIRC               = make_glyph_accent(static_cast<GLYPH_CODE>(GC_e), 0xEA, GCA_CIRC),
-    GC_e_GRAVE              = make_glyph_accent(static_cast<GLYPH_CODE>(GC_e), 0xE8, GCA_GRAVE),
-    GC_e_ACUTE              = make_glyph_accent(static_cast<GLYPH_CODE>(GC_e), 0xE9, GCA_ACUTE),
-    GC_e_DIAERESIS          = make_glyph_accent(static_cast<GLYPH_CODE>(GC_e), 0xEB, GCA_DIAERESIS),
+    GC_e_CIRC               = make_glyph_accent(static_cast<GLYPH_CODE>(GC_e), GCA_CIRC),
+    GC_e_GRAVE              = make_glyph_accent(static_cast<GLYPH_CODE>(GC_e), GCA_GRAVE),
+    GC_e_ACUTE              = make_glyph_accent(static_cast<GLYPH_CODE>(GC_e), GCA_ACUTE),
+    GC_e_DIAERESIS          = make_glyph_accent(static_cast<GLYPH_CODE>(GC_e), GCA_DIAERESIS),
     GC_f                    = make_glyph(G0, 'f'),
     GC_g                    = make_glyph(G0, 'g'),
     GC_h                    = make_glyph(G0, 'h'),
     GC_i                    = make_glyph(G0, 'i'),
-    GC_i_CIRC               = make_glyph_accent(static_cast<GLYPH_CODE>(GC_i), 0xEE, GCA_CIRC),
-    GC_i_DIAERESIS          = make_glyph_accent(static_cast<GLYPH_CODE>(GC_i), 0xEF, GCA_DIAERESIS),
+    GC_i_CIRC               = make_glyph_accent(static_cast<GLYPH_CODE>(GC_i), GCA_CIRC),
+    GC_i_DIAERESIS          = make_glyph_accent(static_cast<GLYPH_CODE>(GC_i), GCA_DIAERESIS),
     GC_j                    = make_glyph(G0, 'j'),
     GC_k                    = make_glyph(G0, 'k'),
     GC_l                    = make_glyph(G0, 'l'),
     GC_m                    = make_glyph(G0, 'm'),
     GC_n                    = make_glyph(G0, 'n'),
     GC_o                    = make_glyph(G0, 'o'),
-    GC_o_CIRC               = make_glyph_accent(static_cast<GLYPH_CODE>(GC_o), 0xF4, GCA_CIRC),
-    GC_o_DIAERESIS          = make_glyph_accent(static_cast<GLYPH_CODE>(GC_o), 0xF6, GCA_DIAERESIS),   // only on VGP5
+    GC_o_CIRC               = make_glyph_accent(static_cast<GLYPH_CODE>(GC_o), GCA_CIRC),
+    GC_o_DIAERESIS          = make_glyph_accent(static_cast<GLYPH_CODE>(GC_o), GCA_DIAERESIS),   // only on VGP5
     GC_p                    = make_glyph(G0, 'p'),
     GC_q                    = make_glyph(G0, 'q'),
     GC_r                    = make_glyph(G0, 'r'),
     GC_s                    = make_glyph(G0, 's'),
     GC_t                    = make_glyph(G0, 't'),
     GC_u                    = make_glyph(G0, 'u'),
-    GC_u_CIRC               = make_glyph_accent(static_cast<GLYPH_CODE>(GC_u), 0xFB, GCA_CIRC),
-    GC_u_GRAVE              = make_glyph_accent(static_cast<GLYPH_CODE>(GC_u), 0xF9, GCA_GRAVE),
-    GC_u_DIAERESIS          = make_glyph_accent(static_cast<GLYPH_CODE>(GC_u), 0xFC, GCA_DIAERESIS),   // only on VGP5
+    GC_u_CIRC               = make_glyph_accent(static_cast<GLYPH_CODE>(GC_u), GCA_CIRC),
+    GC_u_GRAVE              = make_glyph_accent(static_cast<GLYPH_CODE>(GC_u), GCA_GRAVE),
+    GC_u_DIAERESIS          = make_glyph_accent(static_cast<GLYPH_CODE>(GC_u), GCA_DIAERESIS),   // only on VGP5
     GC_v                    = make_glyph(G0, 'v'),
     GC_w                    = make_glyph(G0, 'w'),
     GC_x                    = make_glyph(G0, 'x'),
     GC_y                    = make_glyph(G0, 'y'),
     GC_z                    = make_glyph(G0, 'z'),
-    GC_LVERBAR              = make_glyph(G0, 0x7B, 0x83),
+    GC_LVERBAR              = make_glyph(G0, 0x7B),
     GC_VERBAR               = make_glyph(G0, '|'),
-    GC_RVERBAR              = make_glyph(G0, 0x7D, 0x84),
-    GC_UPRSCR               = make_glyph(G0, 0x7E, 0x86),
+    GC_RVERBAR              = make_glyph(G0, 0x7D),
+    GC_UPRSCR               = make_glyph(G0, 0x7E),
 
-    GC_POUND                = make_glyph(G2, 0x23, 0xA3),
+    GC_POUND                = make_glyph(G2, 0x23),
     GC_DOLLAR_G2            = make_glyph(G2, '$'),      // $ is in both G0 and G2 at the same position ...
-    GC_NUM_G2               = make_glyph(G2, 0x26, '#'),     // # is in both G0 and G2
-    GC_SECT                 = make_glyph(G2, 0x27, 0xA7),
-    GC_LARROW               = make_glyph(G2, 0x2C, 0x81),
-    GC_UPARROW_G2           = make_glyph(G2, 0x2D, 0x5E),     // uparrow is in both G0 and G2
-    GC_RARROW               = make_glyph(G2, 0x2E, 0x82),
-    GC_DARROW               = make_glyph(G2, 0x2F, 0x80),
-    GC_DEG                  = make_glyph(G2, 0x30, 0xB0),
-    GC_PLUSMN               = make_glyph(G2, 0x31, 0xB1),
-    GC_DIV                  = make_glyph(G2, 0x38, 0xF7),
-    GC_FRAC14               = make_glyph(G2, 0x3C, 0xBC),
-    GC_FRAC12               = make_glyph(G2, 0x3D, 0xBD),
-    GC_FRAC34               = make_glyph(G2, 0x3E, 0xBE),
-    GC_LIG_OE               = make_glyph(G2, 0x6A, 0x87),
-    GC_LIG_oe               = make_glyph(G2, 0x7A, 0x88),
-    GC_ESZETT               = make_glyph(G2, 0x7B, 0xDF),
+    GC_NUM_G2               = make_glyph(G2, 0x26),     // # is in both G0 and G2
+    GC_SECT                 = make_glyph(G2, 0x27),
+    GC_LARROW               = make_glyph(G2, 0x2C),
+    GC_UPARROW_G2           = make_glyph(G2, 0x2D),     // uparrow is in both G0 and G2
+    GC_RARROW               = make_glyph(G2, 0x2E),
+    GC_DARROW               = make_glyph(G2, 0x2F),
+    GC_DEG                  = make_glyph(G2, 0x30),
+    GC_PLUSMN               = make_glyph(G2, 0x31),
+    GC_DIV                  = make_glyph(G2, 0x38),
+    GC_FRAC14               = make_glyph(G2, 0x3C),
+    GC_FRAC12               = make_glyph(G2, 0x3D),
+    GC_FRAC34               = make_glyph(G2, 0x3E),
+    GC_LIG_OE               = make_glyph(G2, 0x6A),
+    GC_LIG_oe               = make_glyph(G2, 0x7A),
+    GC_ESZETT               = make_glyph(G2, 0x7B),
 
     GC_SPACE                = make_glyph(SPEC, ' '),
 
@@ -518,7 +540,7 @@ enum GLYPH_CODE : uint32_t
 // Returns GC_UNDRSCR if no GLYPH is found
 constexpr GLYPH_CODE get_glyph_from_charset_code_accent(GLYPH_CHARSET cs, char code, GLYPH_ACCENT a)
 {
-    GLYPH_CODE tmp_glyph_code = make_glyph(cs, code, 0);
+    GLYPH_CODE tmp_glyph_code = make_glyph(cs, code);
     tmp_glyph_code = tmp_glyph_code | static_cast<std::uint32_t>(a<<7);
     switch(tmp_glyph_code)
     {

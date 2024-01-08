@@ -4,13 +4,29 @@
 
 #include "Screen.h"
 
-Screen::Screen(float height) : m_size({height*SCREEN_RATIO, height})
+Screen::Screen(float height)
 {
     for(int i=0; i<40*25; i++)
     {
         m_cells.emplace_back(*this);
     }
     clear();
+    set_height(height);
+}
+
+void Screen::set_height(float height)
+{
+    m_size = {height*SCREEN_RATIO, height};
+    for(std::size_t line=0; line<25; line++)
+    {
+        for(std::size_t col=0; col<40; col++)
+        {
+            ScreenCell&  cell = m_cells[col + line * 40];
+            cell.setSize({m_size.x/40, m_size.y/25});
+            cell.setPosition(col*m_size.x/40, line*m_size.y/25);
+        }
+    }
+    m_cursor.setSize({m_size.x/40, m_size.y/25});
 }
 
 void Screen::draw(sf::RenderTarget &target, sf::RenderStates states) const
@@ -22,7 +38,7 @@ void Screen::draw(sf::RenderTarget &target, sf::RenderStates states) const
     states.transform *= getTransform();
     for(const ScreenCell& r_cell : m_cells)
     {
-        if(get_glyph_att_size(r_cell.get_glypĥ()) == GS_NORMAL)
+        if(get_glyph_att_size(r_cell.get_glyph()) == GS_NORMAL)
             target.draw(r_cell, states);
         else
             non_normal_sized_cells.push_back(&r_cell);
@@ -37,29 +53,42 @@ void Screen::draw(sf::RenderTarget &target, sf::RenderStates states) const
     }
 }
 
-void Screen::update_blink()
+void Screen::__apply_zones_attributes()
 {
-    if(m_clock_blink.getElapsedTime().asSeconds() > 1)
+    for(int line = 1; line<25; line++)
+    {
+        GLYPH_ATT_BCOLOR bcolor = GBC_BLACK;
+        bool underline = false;
+        bool masked    = false;
+        for(int col = 0; col < 40; col++)
+        {
+            ScreenCell& r_cell = m_cells[col+line*40];
+            GLYPH_CODE gc = r_cell.get_glyph();
+            if(is_glyph_zone_delimiter(gc))
+            {
+                bcolor    = get_glyph_att_bcolor(gc);
+                underline = get_glyph_att_underline(gc);
+                masked    = get_glyph_att_mask(gc);
+            }
+            else
+            {
+                gc = set_glyph_att_bcolor(gc, bcolor);
+                gc = set_glyph_att_underline(gc, underline);
+                gc = set_glyph_att_mask(gc, masked);
+            }
+            r_cell.set_glyph(gc);
+        }
+    }
+}
+
+void Screen::update()
+{
+    if(m_clock_blink.getElapsedTime().asSeconds() > 0.7)
     {
         m_blink_state = !m_blink_state;
         m_clock_blink.restart();
     }
-}
-
-
-void Screen::update()
-{
-    for(std::size_t line=0; line<25; line++)
-    {
-        for(std::size_t col=0; col<40; col++)
-        {
-            ScreenCell&  cell = m_cells[col + line * 40];
-            cell.setSize({m_size.x/40, m_size.y/25});
-            cell.setPosition(col*m_size.x/40, line*m_size.y/25);
-        }
-    }
-    m_cursor.setSize({m_size.x/40, m_size.y/25});
-    m_cursor.setFillColor(sf::Color::White);
+    __apply_zones_attributes();
 }
 
 void Screen::clear(bool keep_line_0)
@@ -73,23 +102,67 @@ void Screen::clear(bool keep_line_0)
     }
 }
 
-void Screen::set_glyph_at(GLYPH_CODE gc, int col, int line)
+void Screen::set_glyph_at(GLYPH_CODE gc, std::uint8_t col, std::uint8_t line)
 {
     m_cells[col+line*40].set_glyph(gc);
 }
 
-bool Screen::set_cursor_pos(unsigned int col, unsigned int line)
+void Screen::set_cursor_pos(std::uint8_t col, std::uint8_t line)
 {
     if(col > 39 || line > 24)
-        return false;
+        return;
 
     m_cursor_pos.x = col;
     m_cursor_pos.y = line;
     m_cursor.setPosition(col*m_cursor.getSize().x, line*m_cursor.getSize().y);
-    return true;
 }
 
 void Screen::set_cursor_visible(bool visible)
 {
     m_cursor_visible = visible;
+}
+
+void Screen::set_mask(bool mask)
+{
+    m_masked = mask;
+}
+
+void Screen::scroll(std::int8_t nb_of_line)
+{
+    if(abs(nb_of_line) > 23)
+        clear(true);
+    else if(nb_of_line == 0)
+        return;
+    else
+    {
+        bool scroll_up = nb_of_line < 0;
+        if(scroll_up)
+        {
+            for(std::uint8_t line = -nb_of_line; line < 24; line++)
+            {
+                std::uint8_t src_line = line - nb_of_line;
+                for(std::uint8_t col = 0; col<40; col++)
+                {
+                    ScreenCell& src_cell = m_cells[col+src_line*40];
+                    ScreenCell& dst_cell = m_cells[col+line*40];
+                    dst_cell = src_cell;
+                    src_cell.set_glyph(GC_SPACE);
+                }
+            }
+        }
+        else
+        {
+            for(std::uint8_t line = 24-nb_of_line; line >= 0; line--)
+            {
+                std::uint8_t src_line = line + nb_of_line;
+                for(std::uint8_t col = 0; col<40; col++)
+                {
+                    ScreenCell& src_cell = m_cells[col+src_line*40];
+                    ScreenCell& dst_cell = m_cells[col+line*40];
+                    dst_cell = src_cell;
+                    src_cell.set_glyph(GC_SPACE);
+                }
+            }
+        }
+    }
 }

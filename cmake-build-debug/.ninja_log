@@ -1,0 +1,14 @@
+# ninja log v5
+2	171	1704755069068496894	CMakeFiles/MinitelViewer.dir/minitel_core/Functionalities.cpp.o	84e8b7336ffbb666
+0	571	1704749170158863046	CMakeFiles/MinitelViewer.dir/Screen/Screen.cpp.o	57ac75db88b5d641
+0	679	1704307468543594708	CMakeFiles/MinitelViewer.dir/Screen/Font.cpp.o	3d339128e872226b
+1	558	1704755111848493543	CMakeFiles/MinitelViewer.dir/Screen/ScreenCell.cpp.o	c06453192273060a
+1	151	1704744950709123444	CMakeFiles/MinitelViewer.dir/MinitelCore/Functionalities.cpp.o	5031a5db108ce7da
+1	12	1704756021068436761	build.ninja	ab391b5671c1cd42
+1	559	1704307494643593598	CMakeFiles/MinitelViewer.dir/Screen/MosaicGlyph.cpp.o	a604d9577bf743a8
+1	224	1704755069118496890	CMakeFiles/MinitelViewer.dir/minitel_core/Minitel.cpp.o	7eeeab1afba05db
+1	558	1704753263468609271	CMakeFiles/MinitelViewer.dir/main.cpp.o	2abc3940b2079457
+558	641	1704753263548609266	MinitelViewer	e175021616420fd5
+1	214	1704744950779123435	CMakeFiles/MinitelViewer.dir/MinitelCore/Minitel.cpp.o	218d47cbd1d7e89c
+1	212	1704744744199140836	CMakeFiles/MinitelViewer.dir/Core/Minitel.cpp.o	2efb78eca6d01cf4
+1	153	1704744744139140840	CMakeFiles/MinitelViewer.dir/Core/Functionalities.cpp.o	46a063d16bccbfbd
