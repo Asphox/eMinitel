@@ -11,9 +11,11 @@ With this emulator, you can for exemple :
 - connect to fan-made services implementing Videotex-over-TCP
 - use it as a nice display for an Arduino/embedded project (Videotex is a lightweight protocol by current standards ...)
 ## Compatibility
-Currently eMinitel can (mostly) emulate a Minitel 1B.
-
-MODEM emulation is currently NOT planified.
+- Currently eMinitel can (mostly) emulate a Minitel 1B on Videotex protocol.
+- Modem emulation is currently not planified.
+- Mixed mode is not planifid.
+- Teleinformatique protocol is not planified
+- PAD X-3 protocol is not planified.
 
 eMinitel mainly focuses on DIN emulation.
 ## Incoming features
