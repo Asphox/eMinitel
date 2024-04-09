@@ -3,7 +3,7 @@ Windows and Linux Minitel client emulator.
 ## Description
 eMinitel is a Minitel emulator for Windows and Linux.
 
-The Minitel (Médium intéractif par numérisation d'information téléphonique) is an old french Videotex service, prior the World Wide Web.
+The Minitel (Médium intéractif par numérisation d'information téléphonique) is an old french terminal connected to Videotex services, prior the World Wide Web.
 
 Historically accessible with a telephone line, Orange (ex-France Telecom) closed the service in 2012.
 
