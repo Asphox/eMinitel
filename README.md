@@ -19,12 +19,15 @@ With this emulator, you can for exemple :
 
 eMinitel mainly focuses on DIN emulation.
 ## Incoming features
-- Step by step debug rendering mode
+- More debugging options
 - Minitel's true baudrate emulation for TCP connections
 - Serial connections
 - Minitel 2 DRCS (Dynamical Redefinable Character Set)
 ## How to Install
-Simply download the latest release for your operating system !
+- Windows: You can download and execute the latest release build !
+- Linux and MacOS: No builds provided for now, but eMinitel works really fine on Wine.
+
+  You can also build from source.
 ## How to use it
 - Launch eMinitel
 - Go in "Connection" menu, click on TCP
