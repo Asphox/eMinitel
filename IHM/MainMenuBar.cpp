@@ -77,6 +77,10 @@ void MainMenuBar::update()
         }
         if(ImGui::BeginMenu("Options##AboutMenuBar"))
         {
+            if(ImGui::MenuItem("Debug##DebugMenuBar"))
+            {
+                m_minitel.m_ihm_win_debug.show(true);
+            }
             bool bCheck = m_minitel.colorMode();
             ImGui::Checkbox("Color mode",&bCheck);
             m_minitel.setColorMode(bCheck);

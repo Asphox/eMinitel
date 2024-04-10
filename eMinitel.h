@@ -16,9 +16,11 @@
 #include "IHM/MainMenuBar.h"
 #include "IHM/WinConnectionTCP.h"
 #include "IHM/WinAbout.h"
+#include "IHM/WinDebug.h"
 
 class eMinitel
 {
+friend class IHM::MainMenuBar;
 private:
     sf::RenderWindow& m_render_target;
     mtlc::Minitel     m_minitel_core;
@@ -30,6 +32,7 @@ private:
     IHM::MainMenuBar        m_ihm_menu_bar;
     IHM::WinConnectionTCP   m_ihm_win_connection_tcp;
     IHM::WinAbout           m_ihm_win_about;
+    IHM::WinDebug           m_ihm_win_debug;
 
     bool m_block_event_for_minitel = false;
 

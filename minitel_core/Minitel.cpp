@@ -88,6 +88,8 @@ void Minitel::key_event(mtlc_KeyEvent ke)
             case KC_RETURN  : vdtx_code = VC_PREVIOUS; break;
             case KC_NEXT    : vdtx_code = VC_NEXT; break;
             case KC_SEND    : vdtx_code = VC_SEND; break;
+            case KC_SUMMARY : vdtx_code = VC_SUMMARY; break;
+            case KC_REPETITION: vdtx_code = VC_REPEAT; break;
         }
     }
 
@@ -210,6 +212,15 @@ void Minitel::__process_inputs()
     std::erase_if(m_inputs_buffer, [](char c){ return c == VC_NUL; });
 
     lbl_continue:
+
+    if(m_debug_context.execution_stopped)
+    {
+        if(!m_debug_context.next_step)
+            return;
+        m_debug_context.next_step = false;
+        m_debug_context.execution_stopped = false;
+    }
+
     if(m_inputs_buffer.empty())
         return;
 
@@ -265,6 +276,10 @@ void Minitel::__process_inputs()
 
     if(res_func == RF_OK || res_func == RF_IGNORED)
     {
+        // if stop_execution mode activated and last functionality is OK => stop execution
+        if(m_debug_context.stop_execution)
+            m_debug_context.execution_stopped = true;
+
         for(int i=0; i<nb_byte_processed; i++)
             m_inputs_buffer.pop_front();
         goto lbl_continue;
@@ -340,7 +355,9 @@ void Minitel::__write_char(char code)
     gc = set_glyph_att_blink(gc, m_context.current_char_attributes.blink);
     gc = set_glyph_att_negative(gc, m_context.current_char_attributes.negative);
     // we can't apply double height and double size on line 00
-    if(pos.line != 0 || (pos.line == 0 && m_context.current_char_attributes.size != GS_DOUBLE_SIZE && m_context.current_char_attributes.size != GS_DOUBLE_HEIGHT))
+    if( pos.line == 1 && m_context.current_char_attributes.size == GS_DOUBLE_WIDTH ||
+        pos.line == 0 && m_context.current_char_attributes.size != GS_DOUBLE_SIZE && m_context.current_char_attributes.size != GS_DOUBLE_HEIGHT ||
+        pos.line > 1)
         gc = set_glyph_att_size(gc, m_context.current_char_attributes.size);
     m_context.last_glyph = gc;
     // if zone attributes are waiting and charset is SPEC (space) or G1 => we must start a new zone by creating a delimiter

@@ -36,6 +36,8 @@ void Keyboard::process_event(const sf::Event& event)
                 m_ke.kc = KC_RETURN; break;
             case sf::Keyboard::F3:
                 m_ke.kc = KC_NEXT; break;
+            case sf::Keyboard::F5:
+                m_ke.kc = KC_REPETITION; break;
             case sf::Keyboard::Enter:
             {
                if(m_ke.lshft || m_ke.rshft)

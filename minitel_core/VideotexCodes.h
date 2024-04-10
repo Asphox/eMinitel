@@ -155,7 +155,7 @@ enum VDTX_CODE : std::uint32_t
     VC_REPEAT   = make_vdtx_code(0x13, 0x43),
     VC_GUIDE    = make_vdtx_code(0x13, 0x44),
     VC_CANCEL   = make_vdtx_code(0x13, 0x45),
-    VC_SUMMARY  = make_vdtx_code(0x13, 0x45),
+    VC_SUMMARY  = make_vdtx_code(0x13, 0x46),
     VC_CORRECT  = make_vdtx_code(0x13, 0x47),
     VC_NEXT     = make_vdtx_code(0x13, 0x48),
 
