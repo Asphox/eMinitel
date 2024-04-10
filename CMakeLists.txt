@@ -16,7 +16,7 @@ if(WIN32)
     set(EXECUTABLE_OPTION WIN32)
 endif(WIN32)
 if(UNIX)
-    set(EXECUTABLE_OPTION "" IHM/WinAbout.cpp IHM/WinAbout.h globals.h)
+    set(EXECUTABLE_OPTION "" IHM/WinAbout.cpp IHM/WinAbout.h globals.h IHM/WinDebug.cpp IHM/WinDebug.h)
 endif(UNIX)
 
 file(GLOB IMGUI_SRC
@@ -53,7 +53,7 @@ add_executable(eMinitel ${EXECUTABLE_OPTION}
         IHM/IHM.cpp
         ${IMGUI_SRC}
 
-        IHM/WinAbout.cpp globals.h)
+        IHM/WinAbout.cpp globals.h IHM/WinDebug.h IHM/WinDebug.cpp)
 if(WIN32)
     target_link_libraries(eMinitel sfml-graphics sfml-window sfml-network sfml-system sfml-main -static-libgcc -Wl,-Bstatic -lstdc++ -lpthread -Wl,-Bdynamic)
 endif(WIN32)

@@ -9,6 +9,7 @@ eMinitel::eMinitel(sf::RenderWindow &target)
 ,m_ihm_win_connection_tcp(*this)
 ,m_ihm_menu_bar(*this)
 ,m_ihm_win_about(*this)
+,m_ihm_win_debug(*this)
 ,m_minitel_screen(target.getSize().x*0.765)
 {
     ImGui::SFML::Init(target);
@@ -75,6 +76,7 @@ void eMinitel::run()
         m_ihm_menu_bar.update();
         m_ihm_win_connection_tcp.update();
         m_ihm_win_about.update();
+        m_ihm_win_debug.update();
 
         m_render_target.clear();
         m_render_target.draw(m_minitel_screen);

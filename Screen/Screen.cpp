@@ -72,8 +72,12 @@ void Screen::__apply_zones_attributes()
             }
             else
             {
-                gc = set_glyph_att_bcolor(gc, bcolor);
-                gc = set_glyph_att_underline(gc, underline);
+                // background color + underline/disjoint don't apply on G1 charset !
+                if(get_glyph_charset(gc) != G1)
+                {
+                    gc = set_glyph_att_bcolor(gc, bcolor);
+                    gc = set_glyph_att_underline(gc, underline);
+                }
                 gc = set_glyph_att_mask(gc, masked);
             }
             r_cell.set_glyph(gc);

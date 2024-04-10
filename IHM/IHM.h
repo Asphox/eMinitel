@@ -30,7 +30,6 @@ namespace ImGui
     // Unrelated to imgui's ID stack
     IMGUI_API void  custom_GlobalOpenPopup(const char* str_id, ImGuiPopupFlags popup_flags = 0);
 
-    // return true if the modal is open, and you can start outputting to it.
     // Unrelated to imgui's ID stack
     IMGUI_API void  custom_GlobalBeginPopupModal(const char* name, const std::function<void()>& onBegin, bool* p_open = NULL, ImGuiWindowFlags flags = 0);
 }

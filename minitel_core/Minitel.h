@@ -143,6 +143,13 @@ namespace mtlc
             }
         }m_context;
 
+        struct
+        {
+            bool stop_execution = false;
+            bool execution_stopped = false;
+            bool next_step = false;
+        }m_debug_context;
+
         void __pull_data();
         void __send_data(const std::uint8_t* data, std::size_t size);
         void __pull_keyboard();
@@ -152,6 +159,8 @@ namespace mtlc
         void __process_switch_modem(const std::uint8_t* data, std::size_t size);
         void __process_switch_screen(const std::uint8_t* data, std::size_t size);
         void __process_switch_din(const std::uint8_t* data, std::size_t size);
+
+
     public:
         Minitel();
         void reset();
@@ -159,6 +168,12 @@ namespace mtlc
         void set_screen_control(mtlc_module_control_screen screen, void* ctx);
         void set_din_control(mtlc_module_control_DIN din, void* ctx);
         void set_keyboard_control(mtlc_module_control_keyboard keyboard, void* ctx);
+
+        // debug controls
+        inline void debug_stop_execution(bool b){ m_debug_context.stop_execution = b; if(!b) m_debug_context.execution_stopped=false;}
+        inline bool debug_is_execution_stopped() const { return m_debug_context.stop_execution; }
+        inline void debug_next_step(){ if(m_debug_context.stop_execution) m_debug_context.next_step = true; }
+
 
         // press a key (from __pull_keyboard or external call)
         void key_event(mtlc_KeyEvent ke);

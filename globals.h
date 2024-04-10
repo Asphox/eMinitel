@@ -10,7 +10,7 @@
 
 constexpr std::size_t MAJOR_VERSION = 0;
 constexpr std::size_t MINOR_VERSION = 1;
-constexpr const char* BUILD_VERSION = "b";
+constexpr const char* BUILD_VERSION = "c";
 constexpr const char* BUILD_DATE = __DATE__;
 constexpr const char* BUILD_INFO =
 #ifdef WIN32
