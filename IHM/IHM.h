@@ -11,12 +11,12 @@ class eMinitel;
 
 namespace IHM
 {
-    class IHM
+    class CIHM
     {
     protected:
         eMinitel& m_minitel;
     public:
-        IHM(eMinitel& minitel) : m_minitel(minitel){}
+        CIHM(eMinitel& minitel) : m_minitel(minitel){}
         virtual void update() = 0;
     };
 

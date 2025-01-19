@@ -119,9 +119,9 @@ enum MTLC_KEYCODE : uint8_t
     KC_QUEST
 };
 
-typedef struct
+typedef struct _mtlc_KeyEvent
 {
-    MTLC_KEYCODE kc;
+    MTLC_KEYCODE kc = KC_NONE;
     uint8_t fnct: 1;
     uint8_t ctrl: 2;
     uint8_t lshft: 3;
@@ -147,9 +147,15 @@ typedef struct
     const std::uint8_t* data;
 }mtlc_op_din_param_send_data;
 
+typedef struct
+{
+    uint16_t nb_byte_to_pull;
+    std::uint8_t** data;
+}mtlc_op_din_param_pull_data;
+
 enum MTLC_OP_DIN : uint8_t
 {
-    OPD_PULL_DATA,      // param (const char**) pointer to data buffer / return (uint16_t) size
+    OPD_PULL_DATA,      // param (&mtlc_op_din_param_pull_data)
     OPD_SEND_DATA,      // param (&mtlc_op_din_param_send_data)
 };
 

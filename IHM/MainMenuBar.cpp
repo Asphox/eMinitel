@@ -14,9 +14,27 @@ void MainMenuBar::update()
         {
             if(!m_minitel.isConnected())
             {
+                if (m_minitel.m_configuration.m_recent_connections.size() > 0)
+                {
+                    if (ImGui::BeginMenu("Recent"))
+                    {
+                        for (const auto& connection : m_minitel.m_configuration.m_recent_connections)
+                        {
+                            if (ImGui::MenuItem(connection.c_str()))
+                            {
+                                m_minitel.connect(connection);
+                            }
+                        }
+                        ImGui::EndMenu();
+                    }
+                }
                 if(ImGui::MenuItem("TCP"))
                 {
                     ImGui::custom_GlobalOpenPopup("TCP configuration");
+                }
+                if (ImGui::MenuItem("VDT file"))
+                {
+                    m_minitel.openFileBrowser();
                 }
             }
             if(ImGui::MenuItem("Disconnect",nullptr, false, m_minitel.isConnected()))
@@ -54,7 +72,7 @@ void MainMenuBar::update()
                     ke.kc = KC_GUIDE;
                     m_minitel.getMinitelCore().key_event(ke);
                 }
-                if(ImGui::MenuItem("Summary / Sommaire", "TBD"))
+                if(ImGui::MenuItem("Summary / Sommaire", "TAB"))
                 {
                     mtlc_KeyEvent ke;
                     ke.kc = KC_SUMMARY;
@@ -77,6 +95,37 @@ void MainMenuBar::update()
         }
         if(ImGui::BeginMenu("Options##AboutMenuBar"))
         {
+            if (ImGui::BeginMenu("Baudrate##OptionsBaudrate"))
+            {
+                auto baudrate = m_minitel.getMinitelCore().get_baudrate();
+                bool bauto  =   baudrate == mtlc::Minitel::BAUDRATES::AUTO;
+                bool b300   =   baudrate == mtlc::Minitel::BAUDRATES::B300;
+                bool b1200  =   baudrate == mtlc::Minitel::BAUDRATES::B1200;
+                bool b4800  =   baudrate == mtlc::Minitel::BAUDRATES::B4800;
+                bool b9600  =   baudrate == mtlc::Minitel::BAUDRATES::B9600;
+                if (ImGui::Checkbox("Auto", &bauto))
+                {
+                    baudrate = mtlc::Minitel::BAUDRATES::AUTO;
+                }
+                if (ImGui::Checkbox("300 bauds", &b300))
+                {
+                    baudrate = mtlc::Minitel::BAUDRATES::B300;
+                }
+                if (ImGui::Checkbox("1200 bauds", &b1200))
+                {
+                    baudrate = mtlc::Minitel::BAUDRATES::B1200;
+                }
+                if (ImGui::Checkbox("4800 bauds", &b4800))
+                {
+                    baudrate = mtlc::Minitel::BAUDRATES::B4800;
+                }
+                if (ImGui::Checkbox("9600 bauds", &b9600))
+                {
+                    baudrate = mtlc::Minitel::BAUDRATES::B9600;
+                }
+                m_minitel.getMinitelCore().set_baudrate(baudrate);
+                ImGui::EndMenu();
+            }
             if(ImGui::MenuItem("Debug##DebugMenuBar"))
             {
                 m_minitel.m_ihm_win_debug.show(true);

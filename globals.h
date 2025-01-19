@@ -9,16 +9,14 @@
 #include <string>
 
 constexpr std::size_t MAJOR_VERSION = 0;
-constexpr std::size_t MINOR_VERSION = 1;
-constexpr const char* BUILD_VERSION = "c";
+constexpr std::size_t MINOR_VERSION = 2;
+constexpr const char* BUILD_VERSION = "a";
 constexpr const char* BUILD_DATE = __DATE__;
 constexpr const char* BUILD_INFO =
 #ifdef WIN32
-#ifdef WIN64
         "Windows 64 bits"
 #else
-        "Windows 32 bits"
-#endif
+        "Windows 64 bits"
 #endif
 #ifdef UNIX
         "Linux 64 bits"

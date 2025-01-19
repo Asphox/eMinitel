@@ -10,10 +10,10 @@
 
 namespace IHM
 {
-    class WinAbout : public IHM
+    class WinAbout : public CIHM
     {
     public:
-        WinAbout(eMinitel& r) : IHM(r){}
+        WinAbout(eMinitel& r) : CIHM(r){}
         void update() override;
     };
 }

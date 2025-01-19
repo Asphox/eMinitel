@@ -10,7 +10,7 @@
 
 namespace IHM
 {
-    class MainMenuBar : public IHM
+    class MainMenuBar : public CIHM
     {
     private:
         std::function<void()> m_on_quit;
@@ -19,7 +19,7 @@ namespace IHM
         std::function<void()> m_on_reset;
         std::function<void()> m_on_log;
     public:
-        MainMenuBar(eMinitel& r) : IHM(r){}
+        MainMenuBar(eMinitel& r) : CIHM(r){}
         virtual ~MainMenuBar()  {}
         void update() override;
         inline void OnQuit(std::function<void()>&& on){ m_on_quit = on; }

@@ -9,12 +9,12 @@
 
 namespace IHM
 {
-    class WinDebug : public IHM
+    class WinDebug : public CIHM
     {
     private:
         bool m_visible = false;
     public:
-        WinDebug(eMinitel& r) : IHM(r){}
+        WinDebug(eMinitel& r) : CIHM(r){}
         void update() override;
         inline void show(bool b){ m_visible = b;}
         inline bool visible() const { return m_visible; }

@@ -12,6 +12,8 @@
 //      Enums for glyph specialization data
 // =============================================================================
 
+enum GLYPH_CODE : std::uint32_t;
+
 // Videotext charsets ( + 1 special charset for internal usage)
 enum GLYPH_CHARSET : uint8_t
 {
@@ -44,6 +46,8 @@ enum GLYPH_ATT_BCOLOR : uint8_t
     GBC_YELLOW,
     GBC_WHITE,
 };
+// Mask for BCOLOR in GLYPH_CODE
+constexpr GLYPH_CODE MASK_GLYPH_CODE_ATT_BCOLOR = static_cast<GLYPH_CODE>(0x700000);
 
 // Foreground color attribut (color or grey)
 enum GLYPH_ATT_FCOLOR : uint8_t
@@ -57,6 +61,8 @@ enum GLYPH_ATT_FCOLOR : uint8_t
     GFC_YELLOW,
     GFC_BLACK,
 };
+// Mask for FCOLOR in GLYPH_CODE
+constexpr GLYPH_CODE MASK_GLYPH_CODE_ATT_FCOLOR = static_cast<GLYPH_CODE>(0x3800000);
 
 // Glyph size attribut (only for G0 and G2)
 enum GLYPH_ATT_SIZE : uint8_t
@@ -70,8 +76,6 @@ enum GLYPH_ATT_SIZE : uint8_t
 // =============================================================================
 //      Function for glyph manipulation
 // =============================================================================
-
-enum GLYPH_CODE : std::uint32_t;
 constexpr GLYPH_CODE operator|(GLYPH_CODE gc, std::uint32_t v)
 {
     return static_cast<GLYPH_CODE>(static_cast<std::uint32_t>(gc) | v);
@@ -151,6 +155,7 @@ constexpr GLYPH_CODE get_glyph_charset_accent_code(GLYPH_CODE gc)
 // c            : background color
 constexpr GLYPH_CODE set_glyph_att_bcolor(GLYPH_CODE gc, GLYPH_ATT_BCOLOR c)
 {
+    gc = static_cast<GLYPH_CODE>(gc & ~(0b111 << 20));
     gc = gc | static_cast<std::uint32_t>(c<<20);
     return gc;
 }
@@ -167,6 +172,7 @@ constexpr GLYPH_ATT_BCOLOR get_glyph_att_bcolor(GLYPH_CODE gc)
 // c            : foreground color
 constexpr GLYPH_CODE set_glyph_att_fcolor(GLYPH_CODE gc, GLYPH_ATT_FCOLOR c)
 {
+    gc = static_cast<GLYPH_CODE>(gc & ~(0b111 << 23));
     gc = gc | static_cast<std::uint32_t>(c<<23);
     return gc;
 }

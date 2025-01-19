@@ -10,7 +10,7 @@ void Keyboard::process_event(const sf::Event& event)
 {
     if(event.type != sf::Event::KeyPressed && event.type != sf::Event::KeyReleased && event.type != sf::Event::TextEntered)
         return;
-    mtlc_KeyEvent m_ke;
+    mtlc_KeyEvent m_ke = {};
     m_ke.kc = KC_NONE;
     if(event.type == sf::Event::KeyPressed)
     {
@@ -108,7 +108,8 @@ void Keyboard::process_event(const sf::Event& event)
                 m_ke.kc = KC_AST; break;
             case sf::Keyboard::Dash:
                 m_ke.kc = KC_NUM; break;
-
+            case sf::Keyboard::Tab:
+                m_ke.kc = KC_SUMMARY; break;
             default:
                 break;
         }

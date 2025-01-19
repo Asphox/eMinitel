@@ -76,6 +76,7 @@ void Screen::__apply_zones_attributes()
                 if(get_glyph_charset(gc) != G1)
                 {
                     gc = set_glyph_att_bcolor(gc, bcolor);
+                    auto c = get_glyph_att_bcolor(gc);
                     gc = set_glyph_att_underline(gc, underline);
                 }
                 gc = set_glyph_att_mask(gc, masked);

@@ -9,10 +9,10 @@
 
 namespace IHM
 {
-    class WinConnectionTCP : public IHM
+    class WinConnectionTCP : public CIHM
     {
     public:
-        WinConnectionTCP(eMinitel& r) : IHM(r){}
+        WinConnectionTCP(eMinitel& r) : CIHM(r){}
         void update() override;
         void reset();
         inline const char* getAddress() const { return m_address; }

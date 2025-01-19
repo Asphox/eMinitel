@@ -4,6 +4,7 @@
 
 #include "Minitel.h"
 #include "VideotexCodes.h"
+#include <iostream>
 
 using namespace mtlc;
 
@@ -129,7 +130,40 @@ void Minitel::__pull_data()
     const char* data = nullptr;
     if(m_DIN_control)
     {
-        std::uint16_t size = m_DIN_control(OPD_PULL_DATA, (intptr_t)&data, m_DIN_ctx);
+        // current time of pulling
+        const auto now = std::chrono::steady_clock::now();
+        if (last_time_data_pulled.time_since_epoch().count() == 0)
+            last_time_data_pulled = now;
+        // duration since last pulling
+        const std::chrono::duration<double> since_last_pulling = now - last_time_data_pulled;
+        double time_for_byte_ms = 0.0;
+        switch (m_baudrate)
+        {
+        case BAUDRATES::B300:
+            time_for_byte_ms = 1000.0 / (300.0 / 8.0);
+            break;
+        case BAUDRATES::B1200:
+            time_for_byte_ms = 1000.0 / (1200.0 / 8.0);
+            break;
+        case BAUDRATES::B4800:
+            time_for_byte_ms = 1000.0 / (4800.0 / 8.0);
+            break;
+        case BAUDRATES::B9600:
+            time_for_byte_ms = 1000.0 / (9600.0 / 8.0);
+            break;
+        }
+
+        double how_many_byte_to_pull = (time_for_byte_ms == 0.0) ? 9999.0 : since_last_pulling.count()*1000.0 / time_for_byte_ms;
+        if (how_many_byte_to_pull < 1.0)
+            return;
+
+        mtlc_op_din_param_pull_data pull_data;
+        pull_data.nb_byte_to_pull = how_many_byte_to_pull;
+        pull_data.data = (std::uint8_t**)&data;
+        std::uint16_t size = m_DIN_control(OPD_PULL_DATA, (intptr_t)&pull_data, m_DIN_ctx);
+
+        last_time_data_pulled = now;
+
         if(size == 0 || data == nullptr)
             return;
 
@@ -361,7 +395,7 @@ void Minitel::__write_char(char code)
         gc = set_glyph_att_size(gc, m_context.current_char_attributes.size);
     m_context.last_glyph = gc;
     // if zone attributes are waiting and charset is SPEC (space) or G1 => we must start a new zone by creating a delimiter
-    if((code == ' ' || cs == G1) && !m_context.waiting_zone_attributes.applied)
+    if(code == ' ' || cs == G1)
     {
         gc = set_glyph_zone_delimiter(gc, true);
         gc = set_glyph_att_bcolor(gc, m_context.waiting_zone_attributes.bcolor);

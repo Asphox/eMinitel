@@ -11,6 +11,7 @@
 #include <string>
 #include <vector>
 #include <functional>
+#include <chrono>
 
 namespace mtlc
 {
@@ -24,6 +25,8 @@ namespace mtlc
         void*                        m_DIN_ctx        = nullptr;
         mtlc_module_control_keyboard m_keyboard_control = nullptr;
         void*                        m_keyboard_ctx     = nullptr;
+
+        std::chrono::time_point<std::chrono::steady_clock> last_time_data_pulled;
 
         struct CursorPos
         {
@@ -168,6 +171,18 @@ namespace mtlc
         void set_screen_control(mtlc_module_control_screen screen, void* ctx);
         void set_din_control(mtlc_module_control_DIN din, void* ctx);
         void set_keyboard_control(mtlc_module_control_keyboard keyboard, void* ctx);
+
+        enum class BAUDRATES : std::uint8_t
+        {
+            AUTO = 0x00,     // as fast as the server sends
+            B300 = 0x01,
+            B1200 = 0x02,
+            B4800 = 0x03,
+            B9600 = 0x04,     // from Minitel 2
+        } m_baudrate = BAUDRATES::AUTO;
+
+        inline void set_baudrate(BAUDRATES baudrate) { m_baudrate = baudrate; }
+        inline BAUDRATES get_baudrate() const { return m_baudrate; }
 
         // debug controls
         inline void debug_stop_execution(bool b){ m_debug_context.stop_execution = b; if(!b) m_debug_context.execution_stopped=false;}

@@ -6,6 +6,7 @@
 #define CONSTANTS_H
 
 #include <cstdint>
+#include <cstddef>
 enum VDTX_CODE : std::uint32_t;
 constexpr VDTX_CODE make_vdtx_code(std::uint8_t b1, std::uint8_t b2 = 0, std::uint8_t b3 = 0)
 {

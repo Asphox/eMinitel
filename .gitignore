@@ -11,6 +11,10 @@ CTestTestfile.cmake
 _deps
 cmake-build-*
 .idea/*
+.vs*
+SFML*
+x64*
+x86*
 
 # Prerequisites
 *.d
@@ -33,6 +37,11 @@ cmake-build-*
 # Fortran module files
 *.mod
 *.smod
+
+*.sln
+*.vcxproj*
+
+config.json
 
 # Compiled Static libraries
 *.lai

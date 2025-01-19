@@ -598,9 +598,13 @@ Minitel::RESULT_FUNC Minitel::__func_CSI_H(int& nb_of_byte_processed)
         nb_of_byte_processed++;
     }
     std::uint8_t index_end_seq = 2+index_separator;
+    if(m_inputs_buffer.size() <= index_end_seq)
+        return RF_INSUFFICIENT_DATA;
     if(m_inputs_buffer[index_end_seq] != 0x48)
     {
         index_end_seq++;
+        if (m_inputs_buffer.size() <= index_end_seq)
+            return RF_INSUFFICIENT_DATA;
         if(m_inputs_buffer[index_end_seq] != 0x48)
             return RF_ERR;
         if(m_inputs_buffer.size() < (nb_of_byte_processed+1))

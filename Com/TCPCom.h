@@ -13,6 +13,8 @@ class TCPCom
     char buffer[1024] = {};
     sf::TcpSocket m_socket;
     bool m_connected = false;
+    std::string m_address;
+    int m_port;
 public:
     TCPCom()
     {
@@ -20,6 +22,8 @@ public:
 
     bool connect(const char* address, int port)
     {
+        m_address = "";
+        m_port = 0;
         sf::Time timeout = sf::milliseconds(5000);
         sf::Socket::Status status;
         m_socket.setBlocking(true);
@@ -29,6 +33,8 @@ public:
         }while(status == sf::Socket::Status::NotReady);
         if(status == sf::Socket::Status::Done)
         {
+            m_address = address;
+            m_port = port;
             m_socket.setBlocking(false);
             m_connected = true;
             return true;
@@ -39,12 +45,16 @@ public:
 
     void disconnect()
     {
+        m_address = "";
+        m_port = 0;
         m_socket.disconnect();
         std::fill_n(buffer, sizeof(buffer), 0);
         m_connected = false;
     }
 
     inline bool isConnected() const { return m_connected; }
+    inline std::string_view getAddress() const { return m_address; }
+    inline int getPort() const { return m_port; }
 
     ~TCPCom()
     {
@@ -66,19 +76,24 @@ public:
             }
             case OPD_PULL_DATA:
             {
-                return _this->pull_data((const char**)param);
+                auto param_pull_data = (mtlc_op_din_param_pull_data*)param;
+                return _this->pull_data((const char**)param_pull_data->data, param_pull_data->nb_byte_to_pull);
             }
             default:
                 return 0;
         }
     }
 
-    std::size_t pull_data(const char** p_data)
+    std::size_t pull_data(const char** p_data, std::size_t nb_byte_to_pull)
     {
         if(!m_connected)
             return 0;
+
+        if (nb_byte_to_pull > 1024)
+            nb_byte_to_pull = 1024;
+
         std::size_t r = 0;
-        if(m_socket.receive(buffer, 1024, r) == sf::Socket::Done)
+        if(m_socket.receive(buffer, nb_byte_to_pull, r) == sf::Socket::Done)
             *p_data = buffer;
         return r;
     }
