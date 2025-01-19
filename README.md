@@ -12,6 +12,8 @@ With this emulator, you can for exemple :
 - use it as a nice display for an Arduino/embedded project (Videotex is a lightweight protocol by current standards ...)
 ## Compatibility
 - Currently eMinitel can (mostly) emulate a Minitel 1B on Videotex protocol.
+- Minitel's baudrate emulation for TCP connections : 300 bauds, 1200 bauds, 4800 bauds, 9600 bauds (from Minitel 2)
+- Can load a .vdt file (vidéotext binary file)
 - Modem emulation is currently not planified.
 - Mixed mode is not planifid.
 - Teleinformatique protocol is not planified
@@ -20,7 +22,6 @@ With this emulator, you can for exemple :
 eMinitel mainly focuses on DIN emulation.
 ## Incoming features
 - More debugging options
-- Minitel's true baudrate emulation for TCP connections
 - Serial connections
 - Minitel 2 DRCS (Dynamical Redefinable Character Set)
 ## How to Install
