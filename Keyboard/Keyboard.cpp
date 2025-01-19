@@ -108,8 +108,11 @@ void Keyboard::process_event(const sf::Event& event)
                 m_ke.kc = KC_AST; break;
             case sf::Keyboard::Dash:
                 m_ke.kc = KC_NUM; break;
+
             case sf::Keyboard::Tab:
                 m_ke.kc = KC_SUMMARY; break;
+            case sf::Keyboard::BackSpace:
+                m_ke.kc = KC_CORRECTION; break;
             default:
                 break;
         }

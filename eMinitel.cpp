@@ -3,6 +3,7 @@
 //
 
 #include "eMinitel.h"
+#include "Audio/Beep.h"
 
 eMinitel::eMinitel(sf::RenderWindow &target)
 :m_render_target(target)
@@ -17,6 +18,12 @@ eMinitel::eMinitel(sf::RenderWindow &target)
     m_minitel_screen.setPosition(target.getSize().x*0.01, target.getSize().y*0.05);
     m_minitel_core.set_screen_control(Screen::s_mtlc_screen_control, &m_minitel_screen);
     m_minitel_core.set_keyboard_control(Keyboard::s_mtlc_keyboard_control, &m_minitel_keyboard);
+    m_minitel_core.set_callback_on_bell([](void*)
+    {
+        sf::Sound& sound = get_beep_sound();
+        sound.setVolume(4);
+        sound.play();
+    }, nullptr);
 
     __InitCallbacksIHM();
 

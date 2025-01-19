@@ -91,6 +91,7 @@ void Minitel::key_event(mtlc_KeyEvent ke)
             case KC_SEND    : vdtx_code = VC_SEND; break;
             case KC_SUMMARY : vdtx_code = VC_SUMMARY; break;
             case KC_REPETITION: vdtx_code = VC_REPEAT; break;
+            case KC_CORRECTION: vdtx_code = VC_CORRECT; break;
         }
     }
 
@@ -170,7 +171,6 @@ void Minitel::__pull_data()
         // if DIN is OFF => we don't push data
         if(!__get_module_switch_state(MODULE_CODE::DIN_OUT, MODULE_CODE::DIN_IN))
             return;
-
         for(std::size_t i=0; i<size; i++)
             m_inputs_buffer.push_back(data[i]);
     }
@@ -266,7 +266,7 @@ void Minitel::__process_inputs()
     {
         switch(c)
         {
-            case VC_BEL: break;//todo BELL
+            case VC_BEL: res_func = __func_BELL(nb_byte_processed); break;
             case VC_BS: res_func = __func_BS(nb_byte_processed); break;
             case VC_HT: res_func = __func_HT(nb_byte_processed);break;
             case VC_LF: res_func = __func_LF(nb_byte_processed);break;

@@ -8,6 +8,13 @@
 
 using namespace mtlc;
 
+Minitel::RESULT_FUNC Minitel::__func_BELL(int& nb_of_byte_processed)
+{
+    nb_of_byte_processed = 1;
+    if (m_callback_on_bell)
+        m_callback_on_bell(m_bell_ctx);
+    return RF_OK;
+}
 Minitel::RESULT_FUNC Minitel::__func_BS(int& nb_of_byte_processed)
 {
     nb_of_byte_processed = 1;
@@ -417,8 +424,17 @@ Minitel::RESULT_FUNC Minitel::__func_CSI_K(int& nb_of_byte_processed)
     CursorPos pos = __get_cursor_pos();
     if(pos.line == 0)
         return RF_IGNORED;
-    // todo
-    return RF_IGNORED;
+
+    mtlc_op_screen_param_set_glyph_at param_set_glyph_at;
+    param_set_glyph_at.gc = GC_SPACE;
+    param_set_glyph_at.pos.line = pos.line;
+    for (int col = pos.col; col < 39; col++)
+    {
+        param_set_glyph_at.pos.col = col;
+        m_screen_control(OPS_SET_GLYPH_AT, (intptr_t)&param_set_glyph_at, m_screen_ctx);
+    }
+
+    return RF_OK;
 }
 // same as __func_CSI_K
 Minitel::RESULT_FUNC Minitel::__func_CSI_0K(int& nb_of_byte_processed)

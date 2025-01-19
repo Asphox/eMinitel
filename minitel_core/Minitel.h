@@ -25,6 +25,8 @@ namespace mtlc
         void*                        m_DIN_ctx        = nullptr;
         mtlc_module_control_keyboard m_keyboard_control = nullptr;
         void*                        m_keyboard_ctx     = nullptr;
+        void(*m_callback_on_bell)(void*) = nullptr;
+        void* m_bell_ctx = nullptr;
 
         std::chrono::time_point<std::chrono::steady_clock> last_time_data_pulled;
 
@@ -171,6 +173,7 @@ namespace mtlc
         void set_screen_control(mtlc_module_control_screen screen, void* ctx);
         void set_din_control(mtlc_module_control_DIN din, void* ctx);
         void set_keyboard_control(mtlc_module_control_keyboard keyboard, void* ctx);
+        void set_callback_on_bell(void(*callback_on_bell)(void*), void* ctx) { m_callback_on_bell = callback_on_bell; m_bell_ctx = ctx; }
 
         enum class BAUDRATES : std::uint8_t
         {
@@ -214,7 +217,7 @@ namespace mtlc
         void        __write_char(char c);
         std::uint8_t __get_PRO2_status_byte();
 
-
+        RESULT_FUNC __func_BELL(int& nb_of_byte_processed);
         RESULT_FUNC __func_BS(int& nb_of_byte_processed);
         RESULT_FUNC __func_HT(int& nb_of_byte_processed);
         RESULT_FUNC __func_LF(int& nb_of_byte_processed);
