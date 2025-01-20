@@ -60,6 +60,7 @@ void Screen::__apply_zones_attributes()
         GLYPH_ATT_BCOLOR bcolor = GBC_BLACK;
         bool underline = false;
         bool masked    = false;
+        bool zone_delimiter_is_G1 = false;  // true if the current zone delimiter is in G1 charset
         for(int col = 0; col < 40; col++)
         {
             ScreenCell& r_cell = m_cells[col+line*40];
@@ -67,17 +68,27 @@ void Screen::__apply_zones_attributes()
             if(is_glyph_zone_delimiter(gc))
             {
                 bcolor    = get_glyph_att_bcolor(gc);
-                underline = get_glyph_att_underline(gc);
-                masked    = get_glyph_att_mask(gc);
+                // G1 delimiters only apply background color to zone attributes
+                if (get_glyph_charset(gc) != G1)
+                {
+                    zone_delimiter_is_G1 = false;
+                    underline = get_glyph_att_underline(gc);
+                    masked = get_glyph_att_mask(gc);
+                }
+                else
+                {
+                    zone_delimiter_is_G1 = true;
+                }
             }
             else
             {
                 // background color + underline/disjoint don't apply on G1 charset !
+                // a zone delimited by a G1 only apply background color
                 if(get_glyph_charset(gc) != G1)
                 {
                     gc = set_glyph_att_bcolor(gc, bcolor);
-                    auto c = get_glyph_att_bcolor(gc);
-                    gc = set_glyph_att_underline(gc, underline);
+                    if(!zone_delimiter_is_G1)
+                        gc = set_glyph_att_underline(gc, underline);
                 }
                 gc = set_glyph_att_mask(gc, masked);
             }
@@ -144,7 +155,7 @@ void Screen::clear(bool keep_line_0)
     {
         for(int col = 0; col < 40; col++)
         {
-            m_cells[col+line*40].set_glyph(GC_SPACE);
+            m_cells[col+line*40].set_glyph(GC_DEFAULT);
         }
     }
 }
@@ -194,7 +205,7 @@ void Screen::scroll(std::int8_t nb_of_line)
                     ScreenCell& src_cell = m_cells[col+src_line*40];
                     ScreenCell& dst_cell = m_cells[col+line*40];
                     dst_cell = src_cell;
-                    src_cell.set_glyph(GC_SPACE);
+                    src_cell.set_glyph(GC_DEFAULT);
                 }
             }
         }
@@ -208,7 +219,7 @@ void Screen::scroll(std::int8_t nb_of_line)
                     ScreenCell& src_cell = m_cells[col+src_line*40];
                     ScreenCell& dst_cell = m_cells[col+line*40];
                     dst_cell = src_cell;
-                    src_cell.set_glyph(GC_SPACE);
+                    src_cell.set_glyph(GC_DEFAULT);
                 }
             }
         }

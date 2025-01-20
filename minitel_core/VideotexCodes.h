@@ -178,4 +178,18 @@ enum VDTX_CODE : std::uint32_t
     __VC_CHAR_MAX = VC_UPRSCR,
 };
 
+constexpr bool is_vdtx_code_diacritic(VDTX_CODE code)
+{
+    switch (code)
+    {
+    case VC_GRAVE:
+    case VC_ACUTE:
+    case VC_CIRC:
+    case VC_DIAERESIS:
+        return true;
+    default:
+        return false;
+    }
+}
+
 #endif //CONSTANTS_H

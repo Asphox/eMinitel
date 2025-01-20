@@ -232,6 +232,8 @@ void ScreenCell::set_glyph(GLYPH_CODE gc)
     m_underline.setFillColor(sf_fc);
     m_mosaic.setFillColor(sf_fc);
     m_background.setFillColor(sf_bc);
+    m_background.setSize(m_size);
+    m_background.setOrigin({ 0, 0 });
 
     // if glyph's charset is not mosaic
     if(cs != G1)

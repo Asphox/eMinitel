@@ -119,24 +119,27 @@ namespace mtlc
             std::uint16_t m_modules_switch_status = 0b1000111110001001;
 
             bool is_escaped_to_G2 = false;
+            GLYPH_ACCENT current_diacritic = GCA_NONE;  // only in G2 mode
             bool is_escaped_to_G1 = false;
             bool is_rolling_mode  = false;  //false: page mode / true: rolling mode
             struct
             {
                 GLYPH_ATT_FCOLOR fcolor = GFC_WHITE;
+                GLYPH_ATT_BCOLOR bcolor_G1 = GBC_BLACK;    // only for G1
                 GLYPH_ATT_SIZE   size   = GS_NORMAL;
                 bool             blink  = false;
                 bool             negative = false;
-                bool             disjoint = false;      // only for G1
+                bool             disjoint_G1 = false;      // only for G1
             }current_char_attributes;
             struct
             {
                 GLYPH_ATT_BCOLOR bcolor = GBC_BLACK;
                 bool             underline = false;     // only for G0/G2
                 bool             masked    = false;
-                bool             applied   = true;     // true if attributes already applied
+                bool             is_latent = false;     // true if next delimiter must apply attributes
                 void reset(){ *this = {}; }
-            }waiting_zone_attributes;
+            }current_zone_attributes;
+
             GLYPH_CODE last_glyph = GC_SPACE;
             CursorPos last_main_screen_cursor_pos;
 

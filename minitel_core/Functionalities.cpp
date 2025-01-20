@@ -18,32 +18,24 @@ Minitel::RESULT_FUNC Minitel::__func_BELL(int& nb_of_byte_processed)
 Minitel::RESULT_FUNC Minitel::__func_BS(int& nb_of_byte_processed)
 {
     nb_of_byte_processed = 1;
-    //resets current zone attributes
-    m_context.waiting_zone_attributes.reset();
     __push_cursor_left(true);
     return RF_OK;
 }
 Minitel::RESULT_FUNC Minitel::__func_HT(int& nb_of_byte_processed)
 {
     nb_of_byte_processed = 1;
-    //resets current zone attributes
-    m_context.waiting_zone_attributes.reset();
     __push_cursor_right(true);
     return RF_OK;
 }
 Minitel::RESULT_FUNC Minitel::__func_LF(int& nb_of_byte_processed)
 {
     nb_of_byte_processed = 1;
-    //resets current zone attributes
-    m_context.waiting_zone_attributes.reset();
     __push_cursor_down(true);
     return RF_OK;
 }
 Minitel::RESULT_FUNC Minitel::__func_VT(int& nb_of_byte_processed)
 {
     nb_of_byte_processed = 1;
-    //resets current zone attributes
-    m_context.waiting_zone_attributes.reset();
     __push_cursor_up(true);
     return RF_OK;
 }
@@ -96,10 +88,15 @@ Minitel::RESULT_FUNC Minitel::__func_COFF(int& nb_of_byte_processed)
 Minitel::RESULT_FUNC Minitel::__func_CAN(int& nb_of_byte_processed)
 {
     nb_of_byte_processed = 1;
-    CursorPos old_pos = __get_cursor_pos();
-    for(int col = old_pos.col; col<40; col++)
-        __write_glyph(GC_SPACE);
-    __set_cursor_pos(old_pos);
+    const CursorPos pos = __get_cursor_pos();
+    mtlc_op_screen_param_set_glyph_at param_set_glyph_at;
+    param_set_glyph_at.gc = GC_SPACE;
+    param_set_glyph_at.pos.line = pos.line;
+    for (int col = pos.col; col < 40; col++)
+    {
+        param_set_glyph_at.pos.col = col;
+        m_screen_control(OPS_SET_GLYPH_AT, (intptr_t)&param_set_glyph_at, m_screen_ctx);
+    }
     return RF_OK;
 }
 Minitel::RESULT_FUNC Minitel::__func_SS2(int& nb_of_byte_processed)
@@ -112,8 +109,39 @@ Minitel::RESULT_FUNC Minitel::__func_SS2(int& nb_of_byte_processed)
         return RF_IGNORED;
 
     m_context.is_escaped_to_G2 = true;
-    __write_char(m_inputs_buffer[1]);
+    // if with have a diacritic
+    VDTX_CODE code = static_cast<VDTX_CODE>(make_vdtx_code(m_inputs_buffer[0],m_inputs_buffer[1]));
+    if (is_vdtx_code_diacritic(code))
+    {
+        if (m_inputs_buffer.size() < 3)
+            return RF_INSUFFICIENT_DATA;
+        nb_of_byte_processed = 3;
+        switch (code)
+        {
+        case VC_GRAVE:
+            m_context.current_diacritic = GCA_GRAVE;
+            break;
+        case VC_ACUTE:
+            m_context.current_diacritic = GCA_ACUTE;
+            break;
+        case VC_CIRC:
+            m_context.current_diacritic = GCA_CIRC;
+            break;
+        case VC_DIAERESIS:
+            m_context.current_diacritic = GCA_DIAERESIS;
+            break;
+        default:
+            m_context.current_diacritic = GCA_NONE;
+            break;
+        }
+        __write_char(m_inputs_buffer[2]);
+    }
+    else
+    {
+        __write_char(m_inputs_buffer[1]);
+    }
     m_context.is_escaped_to_G2 = false;
+    m_context.current_diacritic = GCA_NONE;
     return RF_OK;
 }
 Minitel::RESULT_FUNC Minitel::__func_REP(int& nb_of_byte_processed)
@@ -208,54 +236,64 @@ Minitel::RESULT_FUNC Minitel::__func_ESC(int& nb_of_byte_processed)
         case 0x4F : m_context.current_char_attributes.size = GS_DOUBLE_SIZE; break;
         // zone attributes
         case 0x50 :
-            m_context.waiting_zone_attributes.bcolor    = GBC_BLACK;
-            m_context.waiting_zone_attributes.applied   = false;
+            m_context.current_zone_attributes.bcolor    = GBC_BLACK;
+            m_context.current_zone_attributes.is_latent = true;
+            m_context.current_char_attributes.bcolor_G1 = GBC_BLACK;
             break;
         case 0x51 :
-            m_context.waiting_zone_attributes.bcolor   = GBC_RED;
-            m_context.waiting_zone_attributes.applied   = false;
+            m_context.current_zone_attributes.bcolor   = GBC_RED;
+            m_context.current_zone_attributes.is_latent = true;
+            m_context.current_char_attributes.bcolor_G1 = GBC_RED;
             break;
         case 0x52 :
-            m_context.waiting_zone_attributes.bcolor   = GBC_GREEN;
-            m_context.waiting_zone_attributes.applied   = false;
+            m_context.current_zone_attributes.bcolor   = GBC_GREEN;
+            m_context.current_zone_attributes.is_latent = true;
+            m_context.current_char_attributes.bcolor_G1 = GBC_GREEN;
             break;
         case 0x53 :
-            m_context.waiting_zone_attributes.bcolor   = GBC_YELLOW;
-            m_context.waiting_zone_attributes.applied   = false;
+            m_context.current_zone_attributes.bcolor   = GBC_YELLOW;
+            m_context.current_zone_attributes.is_latent = true;
+            m_context.current_char_attributes.bcolor_G1 = GBC_YELLOW;
             break;
         case 0x54 :
-            m_context.waiting_zone_attributes.bcolor   = GBC_BLUE;
-            m_context.waiting_zone_attributes.applied   = false;
+            m_context.current_zone_attributes.bcolor   = GBC_BLUE;
+            m_context.current_zone_attributes.is_latent = true;
+            m_context.current_char_attributes.bcolor_G1 = GBC_BLUE;
             break;
         case 0x55 :
-            m_context.waiting_zone_attributes.bcolor   = GBC_MAGENTA;
-            m_context.waiting_zone_attributes.applied   = false;
+            m_context.current_zone_attributes.bcolor   = GBC_MAGENTA;
+            m_context.current_zone_attributes.is_latent = true;
+            m_context.current_char_attributes.bcolor_G1 = GBC_MAGENTA;
             break;
         case 0x56 :
-            m_context.waiting_zone_attributes.bcolor   = GBC_CYAN;
-            m_context.waiting_zone_attributes.applied   = false;
+            m_context.current_zone_attributes.bcolor   = GBC_CYAN;
+            m_context.current_zone_attributes.is_latent = true;
+            m_context.current_char_attributes.bcolor_G1 = GBC_CYAN;
             break;
         case 0x57 :
-            m_context.waiting_zone_attributes.bcolor   = GBC_WHITE;
-            m_context.waiting_zone_attributes.applied   = false;
+            m_context.current_zone_attributes.bcolor   = GBC_WHITE;
+            m_context.current_zone_attributes.is_latent = true;
+            m_context.current_char_attributes.bcolor_G1 = GBC_WHITE;
             break;
         case 0x58 :
-            m_context.waiting_zone_attributes.masked = true;
-            m_context.waiting_zone_attributes.applied  = false;
+            m_context.current_zone_attributes.masked = true;
+            m_context.current_zone_attributes.is_latent = true;
             break;
         case 0x59 :
-            m_context.waiting_zone_attributes.underline = false;
-            m_context.waiting_zone_attributes.applied  = false;
+            m_context.current_zone_attributes.underline = false;
+            m_context.current_zone_attributes.is_latent = true;
+            m_context.current_char_attributes.disjoint_G1 = false;
             break;
         case 0x5A :
-            m_context.waiting_zone_attributes.underline = true;
-            m_context.waiting_zone_attributes.applied  = false;
+            m_context.current_zone_attributes.underline = true;
+            m_context.current_zone_attributes.is_latent = true;
+            m_context.current_char_attributes.disjoint_G1 = true;
             break;
         case 0x5C : m_context.current_char_attributes.negative = false; break;
         case 0x5D : m_context.current_char_attributes.negative = true; break;
         case 0x5F :
-            m_context.waiting_zone_attributes.masked = false;
-            m_context.waiting_zone_attributes.applied  = false;
+            m_context.current_zone_attributes.masked = false;
+            m_context.current_zone_attributes.is_latent = true;
             break;
         default: return RF_IGNORED;
     }
@@ -352,7 +390,7 @@ Minitel::RESULT_FUNC Minitel::__func_CSI_J(int& nb_of_byte_processed)
     if(pos.line == 0)
         return RF_IGNORED;
     mtlc_op_screen_param_set_glyph_at param_set_glyph_at;
-    param_set_glyph_at.gc = GC_SPACE;
+    param_set_glyph_at.gc = GC_DEFAULT;
     for(int line=pos.line; line<24; line++)
     {
         for(int col=pos.col; col<39; col++)
@@ -385,7 +423,7 @@ Minitel::RESULT_FUNC Minitel::__func_CSI_1J(int& nb_of_byte_processed)
     if(pos.line == 0)
         return RF_IGNORED;
     mtlc_op_screen_param_set_glyph_at param_set_glyph_at;
-    param_set_glyph_at.gc = GC_SPACE;
+    param_set_glyph_at.gc = GC_DEFAULT;
     for(int line=1; line<=pos.line; line++)
     {
         for(int col=0; col<=pos.col; col++)
@@ -426,7 +464,7 @@ Minitel::RESULT_FUNC Minitel::__func_CSI_K(int& nb_of_byte_processed)
         return RF_IGNORED;
 
     mtlc_op_screen_param_set_glyph_at param_set_glyph_at;
-    param_set_glyph_at.gc = GC_SPACE;
+    param_set_glyph_at.gc = GC_DEFAULT;
     param_set_glyph_at.pos.line = pos.line;
     for (int col = pos.col; col < 39; col++)
     {
@@ -457,7 +495,7 @@ Minitel::RESULT_FUNC Minitel::__func_CSI_1K(int& nb_of_byte_processed)
         return RF_IGNORED;
 
     mtlc_op_screen_param_set_glyph_at param_set_glyph_at;
-    param_set_glyph_at.gc = GC_SPACE;
+    param_set_glyph_at.gc = GC_DEFAULT;
     param_set_glyph_at.pos.line = pos.line;
     for(int col=0; col<=pos.col; col++)
     {
@@ -479,7 +517,7 @@ Minitel::RESULT_FUNC Minitel::__func_CSI_2K(int& nb_of_byte_processed)
     if(pos.line == 0)
         return RF_IGNORED;
     mtlc_op_screen_param_set_glyph_at param_set_glyph_at;
-    param_set_glyph_at.gc = GC_SPACE;
+    param_set_glyph_at.gc = GC_DEFAULT;
     param_set_glyph_at.pos.line = pos.line;
     for(int col=0; col<39; col++)
     {
@@ -640,7 +678,8 @@ Minitel::RESULT_FUNC Minitel::__func_CSI_H(int& nb_of_byte_processed)
         pos.col += 10*(m_inputs_buffer[index] - '0');
         index--;
     }
-    pos.col--;
+    if(pos.col > 0)
+        pos.col--;
     index--;
     pos.line = (m_inputs_buffer[index] - '0');
     index--;

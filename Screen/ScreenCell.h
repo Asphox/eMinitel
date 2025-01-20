@@ -29,7 +29,7 @@ private:
     // drawable item if glyph is a mosaic
     MosaicGlyph         m_mosaic;
     // current glyph in the cell
-    GLYPH_CODE          m_glyph = GC_SPACE;
+    GLYPH_CODE          m_glyph = GC_DEFAULT;
 
     void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
 

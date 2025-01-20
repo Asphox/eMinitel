@@ -382,10 +382,16 @@ void Minitel::__write_char(char code)
         cs = G2;
     CursorPos pos = __get_cursor_pos();
 
-    GLYPH_CODE gc = get_glyph_from_charset_code_accent(cs, code, GCA_NONE);
+    GLYPH_CODE gc = get_glyph_from_charset_code_accent(cs, code, m_context.current_diacritic);
 
     // we need to apply current char attributes
     gc = set_glyph_att_fcolor(gc, m_context.current_char_attributes.fcolor);
+    // if glyph is in G1 => we apply back color and disjoint
+    if (cs == G1)
+    {
+        gc = set_glyph_att_bcolor(gc, m_context.current_char_attributes.bcolor_G1);
+        gc = set_glyph_att_underline(gc, m_context.current_char_attributes.disjoint_G1);
+    }
     gc = set_glyph_att_blink(gc, m_context.current_char_attributes.blink);
     gc = set_glyph_att_negative(gc, m_context.current_char_attributes.negative);
     // we can't apply double height and double size on line 00
@@ -397,11 +403,22 @@ void Minitel::__write_char(char code)
     // if zone attributes are waiting and charset is SPEC (space) or G1 => we must start a new zone by creating a delimiter
     if(code == ' ' || cs == G1)
     {
-        gc = set_glyph_zone_delimiter(gc, true);
-        gc = set_glyph_att_bcolor(gc, m_context.waiting_zone_attributes.bcolor);
-        gc = set_glyph_att_underline(gc, m_context.waiting_zone_attributes.underline);
-        gc = set_glyph_att_mask(gc, m_context.waiting_zone_attributes.masked);
-        m_context.waiting_zone_attributes.applied = true;
+        // a semi-graphic char is always a zone delimiteur for the next chars (only for background color)
+        if (cs == G1)
+        {
+            gc = set_glyph_zone_delimiter(gc, true);
+            gc = set_glyph_att_bcolor(gc, m_context.current_char_attributes.bcolor_G1);
+        }
+        // if zone attributes are latent, creates a space delimiter to apply them
+        else if(m_context.current_zone_attributes.is_latent)
+        {
+            m_context.current_zone_attributes.is_latent = false;
+            gc = set_glyph_zone_delimiter(gc, true);
+            gc = set_glyph_att_bcolor(gc, m_context.current_zone_attributes.bcolor);
+            gc = set_glyph_att_underline(gc, m_context.current_zone_attributes.underline);
+            gc = set_glyph_att_mask(gc, m_context.current_zone_attributes.masked);
+
+        }
     }
 
     if(m_screen_control)

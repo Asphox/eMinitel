@@ -260,7 +260,7 @@ constexpr bool is_glyph_zone_delimiter(GLYPH_CODE gc)
 {
     GLYPH_CHARSET cs = get_glyph_charset(gc);
     if(cs == G1 || get_glyph_vdtx_code(gc) == ' ')
-        return gc & (1<<19);
+        return (cs == G1) || (gc & (1<<19));
     return false;
 }
 
@@ -546,6 +546,7 @@ enum GLYPH_CODE : uint32_t
     GC_MOSAIC_13456         = make_glyph(G1, 0x7D),
     GC_MOSAIC_23456         = make_glyph(G1, 0x7E),
     GC_MOSAIC_123456        = make_glyph(G1, 0x5F),
+    GC_DEFAULT              = set_glyph_att_color(static_cast<GLYPH_CODE>(GC_MOSAIC_123456), GFC_BLACK, GBC_BLACK),
 };
 
 #define __GLYPH_CASE_FROM_CHARSET_CODE_ACCENT__(gc) case get_glyph_charset_accent_code(gc) : return gc
@@ -554,7 +555,10 @@ enum GLYPH_CODE : uint32_t
 constexpr GLYPH_CODE get_glyph_from_charset_code_accent(GLYPH_CHARSET cs, char code, GLYPH_ACCENT a)
 {
     GLYPH_CODE tmp_glyph_code = make_glyph(cs, code);
-    tmp_glyph_code = tmp_glyph_code | static_cast<std::uint32_t>(a<<7);
+    if(a != GCA_NONE)
+        tmp_glyph_code = make_glyph_accent(tmp_glyph_code, a);
+    tmp_glyph_code = get_glyph_charset_accent_code(tmp_glyph_code);
+    auto fzafez = get_glyph_charset_accent_code(GC_I);
     switch(tmp_glyph_code)
     {
         __GLYPH_CASE_FROM_CHARSET_CODE_ACCENT__(GC_EXCL         );
